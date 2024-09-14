@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { sign, verify } from "hono/jwt";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
+import { createPostInput, updateBlogInput } from "@praneetog/medium-common";
 
 export const blogRouter = new Hono<{
   Bindings: {
@@ -35,8 +36,17 @@ blogRouter.use("/*", async (c, next) => {
   }
 });
 
+//Create a Post
 blogRouter.post("/", async (c) => {
   const body = await c.req.json();
+  const { success } = createPostInput.safeParse(body);  //Zod Validation
+  if(!success){
+    c.status(411);
+    return c.json({
+      message: "Inputs are incorrect"
+    })
+  }
+
   const authorId = c.get("userId");
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
@@ -55,8 +65,17 @@ blogRouter.post("/", async (c) => {
   });
 });
 
+//Update a Post
 blogRouter.put("/", async (c) => {
   const body = await c.req.json();
+  const { success } = updateBlogInput.safeParse(body);  //Zod Validation
+  if(!success){
+    c.status(411);
+    return c.json({
+      message: "Inputs are incorrect"
+    })
+  }
+
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -74,6 +93,7 @@ blogRouter.put("/", async (c) => {
   return c.text("updated post");
 });
 
+//Get all Posts
 blogRouter.get("/bulk", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
@@ -86,6 +106,7 @@ blogRouter.get("/bulk", async (c) => {
   });
 });
 
+//Get a Post
 blogRouter.get("/:id", async (c) => {
   const id = c.req.param("id");
   const prisma = new PrismaClient({
