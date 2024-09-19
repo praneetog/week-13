@@ -3,9 +3,9 @@ import { Auth } from "../components/Auth"
 
 export const Signup = () => {
   return (
-    <div className="grid grid-cols-2">
+    <div className="md:grid md:grid-cols-2">
         <div>
-            <Auth />
+            <Auth type="signup" />
         </div>
         <div className="invisible md:visible">
             <Quotes />
